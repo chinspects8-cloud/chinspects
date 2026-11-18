@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/schedule",
+      "destination": "https://inspectionsupport.com/isn-knelson/online-scheduler/4d9c0fda-a7a7-11f1-bdcb-0a63506e1b9d",
+      "statusCode": 302
+    },
+    {
+      "source": "/schedule/",
+      "destination": "https://inspectionsupport.com/isn-knelson/online-scheduler/4d9c0fda-a7a7-11f1-bdcb-0a63506e1b9d",
+      "statusCode": 302
+    }
+  ]
+}

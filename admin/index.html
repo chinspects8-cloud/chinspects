@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>CHI Admin Portal</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CHI Comprehensive Home Inspections" />
+    <meta property="og:url" content="https://www.chinspects.com/admin/" />
+    <meta property="og:title" content="CHI Comprehensive Home Inspections" />
+    <meta property="og:description" content="Detailed home inspections across Maryland, Pennsylvania, DC and West Virginia." />
+    <meta property="og:image" content="https://www.chinspects.com/assets/og-image.jpg" />
+    <meta property="og:image:secure_url" content="https://www.chinspects.com/assets/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="CHI Comprehensive Home Inspections logo" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CHI Comprehensive Home Inspections" />
+    <meta name="twitter:image" content="https://www.chinspects.com/assets/og-image.jpg" />
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+    <link rel="preload" href="../assets/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- /admin (no trailing slash) would otherwise request /admin.css, which 404s.
+         Inject the real URL before the parser can preload the wrong one. -->
+    <script>
+      (function () {
+        var bare = location.protocol !== "file:" && !location.pathname.endsWith("/") && !/\.[a-z0-9]+$/i.test(location.pathname.split("/").pop());
+        var css = document.createElement("link");
+        css.rel = "stylesheet";
+        css.href = bare ? "/admin/admin.css" : "admin.css";
+        document.head.appendChild(css);
+      })();
+    </script>
+    <script src="../assets/cms-config.js" defer></script>
+    <script src="../assets/cms-map.js" defer></script>
+    <!-- Parser-inserted so this runs after cms-map.js. A late-injected script
+         can start first and then crash with "reading 'label'". -->
+    <script>
+      (function () {
+        var bare = location.protocol !== "file:" && !location.pathname.endsWith("/") && !/\.[a-z0-9]+$/i.test(location.pathname.split("/").pop() || "");
+        document.write('<script src="' + (bare ? "/admin/admin.js" : "admin.js") + '" defer><\/script>');
+      })();
+    </script>
+  </head>
+  <body>
+    <!-- ------------------------------------------------- access code -->
+    <div class="login-screen" id="login">
+      <form class="login-card" id="login-form" autocomplete="off">
+        <img src="../assets/chi-logo.webp" alt="CHI Comprehensive Home Inspections" width="440" height="405" />
+        <h1>Admin portal</h1>
+        <p>Enter your access code to manage the website and booking requests.</p>
+        <label for="password">
+          Access code
+          <input type="password" id="password" autocomplete="current-password" inputmode="text" required />
+        </label>
+        <button class="btn btn-primary" type="submit" id="login-btn">Unlock</button>
+        <p class="login-error" id="login-error" hidden></p>
+        <p class="login-note">Your access code is checked securely by the server.</p>
+      </form>
+    </div>
+
+    <!-- --------------------------------------------------------- app -->
+    <div class="app" id="app" hidden>
+      <header class="topbar">
+        <div class="topbar-left">
+          <img src="../assets/chi-logo.webp" alt="" width="440" height="405" />
+          <div>
+            <strong>Admin portal</strong>
+            <span id="save-state">All changes saved</span>
+          </div>
+        </div>
+
+        <nav class="tabs" aria-label="Admin sections">
+          <button type="button" class="tab active" data-tab="bookings" id="tab-bookings">
+            Booking requests <span class="badge" id="new-count" hidden>0</span>
+          </button>
+          <button type="button" class="tab" data-tab="content" id="tab-content">Edit website</button>
+          <button type="button" class="tab" data-tab="settings" id="tab-settings">Settings</button>
+        </nav>
+
+        <div class="topbar-right">
+          <span class="content-actions">
+            <button class="btn btn-ghost" type="button" id="btn-preview-toggle">Hide preview</button>
+            <button class="btn btn-ghost" type="button" id="btn-revert">Undo changes</button>
+            <button class="btn btn-primary" type="button" id="btn-save" disabled>Save &amp; publish</button>
+          </span>
+          <button class="btn btn-quiet" type="button" id="btn-logout">Lock</button>
+        </div>
+      </header>
+
+      <!-- ------------------------------------------- booking requests -->
+      <section class="bookings" id="view-bookings" aria-labelledby="bookings-title">
+        <div class="bookings-head">
+          <div>
+            <h2 id="bookings-title">Booking requests</h2>
+            <p class="section-hint" id="bookings-summary">Loading…</p>
+          </div>
+          <div class="bookings-tools">
+            <input type="search" id="booking-search" placeholder="Search name, phone, email, address" aria-label="Search booking requests" />
+            <select id="booking-filter" aria-label="Filter by status">
+              <option value="all">All statuses</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button class="btn btn-ghost" type="button" id="btn-refresh">Refresh</button>
+            <button class="btn btn-ghost" type="button" id="btn-export">Download CSV</button>
+          </div>
+        </div>
+        <div class="booking-list" id="booking-list"></div>
+      </section>
+
+      <!-- ------------------------------------------------------- settings -->
+      <section class="settings" id="view-settings" hidden>
+        <div class="bookings-head">
+          <div>
+            <h2>Settings</h2>
+            <p class="section-hint">Change the email and access code used to open this portal.</p>
+          </div>
+        </div>
+        <form class="settings-card" id="email-form" autocomplete="off">
+          <h3>Change email</h3>
+          <p class="section-hint">Sign-in uses <strong id="settings-email"></strong>. The access code stays the same. If a confirmation link arrives, open it before the new email will work.</p>
+          <label for="email-new">
+            New email
+            <input type="email" id="email-new" autocomplete="off" required />
+          </label>
+          <label for="email-confirm">
+            Confirm new email
+            <input type="email" id="email-confirm" autocomplete="off" required />
+          </label>
+          <label for="email-password">
+            Current access code
+            <input type="password" id="email-password" autocomplete="current-password" required />
+          </label>
+          <button class="btn btn-primary" type="submit" id="email-save">Update email</button>
+          <p class="login-error" id="email-error" hidden></p>
+        </form>
+        <form class="settings-card" id="password-form" autocomplete="off">
+          <h3>Change access code</h3>
+          <p class="section-hint">This updates the password for <strong id="settings-email-code"></strong>. Use at least 8 characters.</p>
+          <label for="pw-current">
+            Current access code
+            <input type="password" id="pw-current" autocomplete="current-password" required />
+          </label>
+          <label for="pw-new">
+            New access code
+            <input type="password" id="pw-new" autocomplete="new-password" minlength="8" required />
+          </label>
+          <label for="pw-confirm">
+            Confirm new access code
+            <input type="password" id="pw-confirm" autocomplete="new-password" minlength="8" required />
+          </label>
+          <button class="btn btn-primary" type="submit" id="pw-save">Update access code</button>
+          <p class="login-error" id="pw-error" hidden></p>
+        </form>
+      </section>
+
+      <!-- ------------------------------------------------ website editor -->
+      <div class="layout" id="view-content" hidden>
+        <nav class="sidebar" id="sidebar" aria-label="Website sections"></nav>
+
+        <main class="editor" id="editor"></main>
+
+        <aside class="preview" id="preview">
+          <div class="preview-bar">
+            <span>Live preview</span>
+            <div class="preview-sizes">
+              <button type="button" data-size="desktop" class="active">Desktop</button>
+              <button type="button" data-size="mobile">Mobile</button>
+            </div>
+            <a href="../" target="_blank" rel="noopener">Open site ↗</a>
+          </div>
+          <div class="preview-frame-wrap" id="frame-wrap">
+            <iframe id="preview-frame" src="../index.html" title="Live preview of the website"></iframe>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+  </body>
+</html>
